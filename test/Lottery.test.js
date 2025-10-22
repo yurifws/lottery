@@ -20,3 +20,9 @@ beforeEach(async () => {
     })
     .send({ from: accounts[0], gas: '1000000' });
 });
+
+describe('Lottery', () => {
+    it('deploys a contract', () => {
+        assert.ok(lottery.options.address)
+    });
+});
