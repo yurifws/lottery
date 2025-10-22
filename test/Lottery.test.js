@@ -9,16 +9,11 @@ let lottery;
 let accounts;
 
 beforeEach(async () => {
-// Get a list of all accounts
-  accounts = await web3.eth.getAccounts();
-
-//Use one of those accounts to deploy
-//the contract
-  lottery = await new web3.eth.Contract(abi)
-    .deploy({
-      data: evm.bytecode.object
-    })
-    .send({ from: accounts[0], gas: '1000000' });
+    accounts = await web3.eth.getAccounts();
+    
+    lottery = await new web3.eth.Contract(abi)
+        .deploy({ data: evm.bytecode.object })
+        .send({ from: accounts[0], gas: '1000000' }); 
 });
 
 describe('Lottery', () => {
@@ -71,16 +66,47 @@ describe('Lottery', () => {
 
     
     it('require a minimum ammount of ether to enter', async () => {
+
+        let errorCaught = false;
+
         try {
 
             await lottery.methods.enter().send({
                 from: accounts[0],
                 value: 0
             });
-            
-            assert(false);
         } catch (error) {
-            assert(error);
+            errorCaught = true;
         }
+            assert(errorCaught);
     });
+
+    it('only the manager can call pickWinner', async () => {
+        const manager = await lottery.methods.manager().call();
+        
+        await lottery.methods.enter().send({
+            from: accounts[1],
+            value: web3.utils.toWei('0.02', 'ether')
+        });
+        
+        await lottery.methods.enter().send({
+            from: accounts[2],
+            value: web3.utils.toWei('0.02', 'ether')
+        });
+        
+        let errorCaught = false;
+        
+        try {
+            const receipt = await lottery.methods.pickWinner().send({
+                from: accounts[1],
+                gas: '1000000'
+            });
+        } catch (error) {
+            errorCaught = true;
+        }
+        
+        assert(errorCaught);
+    });
+    
+    
 });
