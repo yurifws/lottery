@@ -20,6 +20,7 @@ contract Lottery {
     function pickWinner() public {
         uint index = random() % players.length;
         payable(players[index]).transfer(address(this).balance);
+        players = new address[](0);
     }
 
 }
